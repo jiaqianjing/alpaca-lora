@@ -34,7 +34,7 @@ TARGET_MODULES = [
     "q_proj",
     "v_proj",
 ]
-DATA_PATH = "alpaca_data_cleaned.json"
+DATA_PATH = "zh_alpaca_total.json"
 
 device_map = "auto"
 world_size = int(os.environ.get('WORLD_SIZE', 1))
@@ -44,12 +44,12 @@ if ddp:
     GRADIENT_ACCUMULATION_STEPS = GRADIENT_ACCUMULATION_STEPS // world_size
 
 model = LlamaForCausalLM.from_pretrained(
-    "decapoda-research/llama-7b-hf",
+    "./hf_weight/llama-7b/",
     load_in_8bit=True,
     device_map=device_map,
 )
 tokenizer = LlamaTokenizer.from_pretrained(
-    "decapoda-research/llama-7b-hf", add_eos_token=True
+    "./hf_weight/llama-7b/", add_eos_token=True
 )
 
 model = prepare_model_for_int8_training(model)

@@ -1,7 +1,11 @@
+.ipynb_checkpoints/
+wandb/
+log/
+*.json
 out/
 7B/
 13B/
 __pycache__/
 checkpoint**
-minimal-llama**
-upload.py
+hf_weight
+lora-alpaca
