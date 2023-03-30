@@ -34,7 +34,7 @@ TARGET_MODULES = [
     "q_proj",
     "v_proj",
 ]
-DATA_PATH = "patent_instructions.json"
+DATA_PATH = "total_instructions.json"
 
 device_map = "auto"
 world_size = int(os.environ.get('WORLD_SIZE', 1))
