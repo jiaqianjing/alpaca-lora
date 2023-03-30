@@ -20,7 +20,7 @@ from peft import (
 
 
 # optimized for RTX 4090. for larger GPUs, increase some of these?
-MICRO_BATCH_SIZE = 4  # this could actually be 5 but i like powers of 2
+MICRO_BATCH_SIZE = 3  # this could actually be 5 but i like powers of 2
 BATCH_SIZE = 128
 GRADIENT_ACCUMULATION_STEPS = BATCH_SIZE // MICRO_BATCH_SIZE
 EPOCHS = 3  # we don't always need 3 tbh
@@ -34,7 +34,7 @@ TARGET_MODULES = [
     "q_proj",
     "v_proj",
 ]
-DATA_PATH = "zh_alpaca_total.json"
+DATA_PATH = "patent_instructions.json"
 
 device_map = "auto"
 world_size = int(os.environ.get('WORLD_SIZE', 1))

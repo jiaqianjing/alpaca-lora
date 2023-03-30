@@ -8,4 +8,4 @@ out/
 __pycache__/
 checkpoint**
 hf_weight
-lora-alpaca
+lora-alpaca*
