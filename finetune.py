@@ -20,9 +20,12 @@ from peft import (
 
 
 # optimized for RTX 4090. for larger GPUs, increase some of these?
-MICRO_BATCH_SIZE = 3  # this could actually be 5 but i like powers of 2
-BATCH_SIZE = 128
-GRADIENT_ACCUMULATION_STEPS = BATCH_SIZE // MICRO_BATCH_SIZE
+#MICRO_BATCH_SIZE = 3  # this could actually be 5 but i like powers of 2
+#BATCH_SIZE = 128
+#GRADIENT_ACCUMULATION_STEPS = BATCH_SIZE // MICRO_BATCH_SIZE
+MICRO_BATCH_SIZE=128
+GRADIENT_ACCUMULATION_STEPS=1
+
 EPOCHS = 3  # we don't always need 3 tbh
 LEARNING_RATE = 3e-4  # the Karpathy constant
 CUTOFF_LEN = 256  # 256 accounts for about 96% of the data
@@ -142,6 +145,8 @@ trainer = transformers.Trainer(
         save_total_limit=3,
         load_best_model_at_end=True,
         ddp_find_unused_parameters=False if ddp else None,
+        report_to='wandb',
+        run_name='alpaca-lora-patent'
     ),
     data_collator=transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
 )
