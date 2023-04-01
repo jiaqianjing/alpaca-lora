@@ -47,13 +47,14 @@ def evaluate(instruction, history=None, temperature=0.1, top_p=0.75, top_k=1, nu
         history = []
     if not history:
         prompt = prompt_template.format(instruction=instruction, response="")
+        print("first session: ", prompt)
     else:
         prompt = ""
         for old_instruction, response in history:
-            prompt += prompt_template.format(
-                instruction=old_instruction, response=response) + "\n"
+            print(f"old_instruction: {old_instruction}, response: {response}")
+            prompt += prompt_template.format(instruction=old_instruction, response=response) + "\n"
         prompt += prompt_template.format(instruction=instruction, response="")
-
+    print("prompt: " + prompt)
     inputs = tokenizer(prompt, return_tensors="pt")
     input_ids = inputs["input_ids"].to(device)
     generation_config = GenerationConfig(
@@ -84,6 +85,7 @@ MAX_BOXES = MAX_TURNS * 2
 
 def predict(input, max_length, top_p, temperature, history=None):
     if history is None:
+        print("init history...")
         history = []
     print("input: ", input)
     for response, history in evaluate(input, history, temperature=temperature, top_p=top_p, max_tokens=max_length):
@@ -99,21 +101,21 @@ def predict(input, max_length, top_p, temperature, history=None):
 
 with gr.Blocks() as demo:
     state = gr.State([])
+    print(f"state: {state}, type: {type(state)}")
     text_boxes = []
     for i in range(MAX_BOXES):
         if i % 2 == 0:
-            text_boxes.append(gr.Markdown(visible=False, label="提问："))
+            text_boxes.append(gr.Markdown(visible=False, label="User: "))
         else:
-            text_boxes.append(gr.Markdown(visible=False, label="回复："))
+            text_boxes.append(gr.Markdown(visible=False, label="Alpatent: "))
 
     with gr.Row():
         with gr.Column(scale=4):
             txt = gr.Textbox(show_label=False, placeholder="Enter text and press enter", lines=11).style(container=False)
         with gr.Column(scale=1):
-            max_length = gr.Slider(0, 2048, value=2048, step=1.0, label="Maximum length", interactive=True)
+            max_length = gr.Slider(0, 2048, value=256, step=1.0, label="Maximum length", interactive=True)
             top_p = gr.Slider(0, 1, value=0.7, step=0.01, label="Top P", interactive=True)
             temperature = gr.Slider(0, 1, value=0.95, step=0.01, label="Temperature", interactive=True)
             button = gr.Button("Generate")
     button.click(predict, [txt, max_length, top_p, temperature, state], [state] + text_boxes)
-# demo.queue(concurrency_count=3).launch(share=True, inbrowser=True, server_name='0.0.0.0', server_port=3344)
-demo.launch(share=True, inbrowser=True, server_name='0.0.0.0', server_port=6006)
+demo.queue(concurrency_count=1).launch(share=True, inbrowser=True, server_name='0.0.0.0', server_port=6006)
