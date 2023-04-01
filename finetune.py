@@ -1,11 +1,11 @@
 import os
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import torch
 import torch.nn as nn
 import bitsandbytes as bnb
 from datasets import load_dataset
 import transformers
+from utils import get_current_time
 
 assert (
     "LlamaTokenizer" in transformers._import_structure["models.llama"]
@@ -20,11 +20,11 @@ from peft import (
 
 
 # optimized for RTX 4090. for larger GPUs, increase some of these?
-#MICRO_BATCH_SIZE = 3  # this could actually be 5 but i like powers of 2
-#BATCH_SIZE = 128
-#GRADIENT_ACCUMULATION_STEPS = BATCH_SIZE // MICRO_BATCH_SIZE
-MICRO_BATCH_SIZE=128
-GRADIENT_ACCUMULATION_STEPS=1
+MICRO_BATCH_SIZE = 3  # this could actually be 5 but i like powers of 2
+BATCH_SIZE = 128
+GRADIENT_ACCUMULATION_STEPS = BATCH_SIZE // MICRO_BATCH_SIZE
+# MICRO_BATCH_SIZE=128
+# GRADIENT_ACCUMULATION_STEPS=1
 
 EPOCHS = 3  # we don't always need 3 tbh
 LEARNING_RATE = 3e-4  # the Karpathy constant
@@ -37,7 +37,7 @@ TARGET_MODULES = [
     "q_proj",
     "v_proj",
 ]
-DATA_PATH = "total_instructions.json"
+DATA_PATH = "lite_instructions.json"
 
 device_map = "auto"
 world_size = int(os.environ.get('WORLD_SIZE', 1))
@@ -75,29 +75,6 @@ train_val = data["train"].train_test_split(
 train_data = train_val["train"]
 val_data = train_val["test"]
 
-
-# def generate_prompt(data_point):
-#     # sorry about the formatting disaster gotta move fast
-#     if data_point["input"]:
-#         return f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
-
-# ### Instruction:
-# {data_point["instruction"]}
-
-# ### Input:
-# {data_point["input"]}
-
-# ### Response:
-# {data_point["output"]}"""
-#     else:
-#         return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
-
-# ### Instruction:
-# {data_point["instruction"]}
-
-# ### Response:
-# {data_point["output"]}"""
-
 def generate_prompt(data_point):
     return f"""
 ### Human:
@@ -125,6 +102,8 @@ def tokenize(prompt):
 train_data = train_data.shuffle().map(lambda x: tokenize(generate_prompt(x)))
 val_data = val_data.shuffle().map(lambda x: tokenize(generate_prompt(x)))
 
+os.environ['WANDB_PROJECT '] = 'alpaca-lora'
+run_name = str(os.environ.get('WANDB_PROJECT')) + '-' + get_current_time()
 trainer = transformers.Trainer(
     model=model,
     train_dataset=train_data,
@@ -146,7 +125,7 @@ trainer = transformers.Trainer(
         load_best_model_at_end=True,
         ddp_find_unused_parameters=False if ddp else None,
         report_to='wandb',
-        run_name='alpaca-lora-patent'
+        run_name=run_name
     ),
     data_collator=transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
 )
@@ -159,6 +138,6 @@ model.state_dict = (
 
 trainer.train()
 
-model.save_pretrained("lora-alpaca")
+model.save_pretrained(run_name)
 
 print("\n If there's a warning about missing keys above, please disregard :)")
