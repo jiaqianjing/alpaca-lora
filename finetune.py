@@ -26,7 +26,7 @@ GRADIENT_ACCUMULATION_STEPS = BATCH_SIZE // MICRO_BATCH_SIZE
 # MICRO_BATCH_SIZE=128
 # GRADIENT_ACCUMULATION_STEPS=1
 
-EPOCHS = 3  # we don't always need 3 tbh
+EPOCHS = 20  # we don't always need 3 tbh
 LEARNING_RATE = 3e-4  # the Karpathy constant
 CUTOFF_LEN = 256  # 256 accounts for about 96% of the data
 LORA_R = 8
@@ -102,7 +102,7 @@ def tokenize(prompt):
 train_data = train_data.shuffle().map(lambda x: tokenize(generate_prompt(x)))
 val_data = val_data.shuffle().map(lambda x: tokenize(generate_prompt(x)))
 
-os.environ['WANDB_PROJECT '] = 'alpaca-lora'
+os.environ['WANDB_PROJECT'] = 'lora-alpaca'
 run_name = str(os.environ.get('WANDB_PROJECT')) + '-' + get_current_time()
 trainer = transformers.Trainer(
     model=model,
