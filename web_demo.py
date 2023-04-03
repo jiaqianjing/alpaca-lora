@@ -10,7 +10,7 @@ assert (
 
 
 BASE_MODEL = "./hf_weight/llama-7b/"
-LORA_WEIGHTS = "lora-alpaca-202304020014"
+LORA_WEIGHTS = "lora-alpaca-202304021101"
 
 tokenizer = LlamaTokenizer.from_pretrained(BASE_MODEL)
 
